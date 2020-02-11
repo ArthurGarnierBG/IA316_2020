@@ -10,8 +10,6 @@ def random_argmax(rng, list_):
         when multiple max exists."""
     return rng.choice(np.argwhere(list_ == list_.max()).flatten())
 
-np.set_printoptions(precision=2)
-
 class ExplicitFeedback:
     """ A rating environment with explicit feedback.
         User and items are represented by points in R^k
@@ -22,29 +20,24 @@ class ExplicitFeedback:
         action: Recommend one item for a given user among those he has never bought before
     """
 
-    def __init__(self, nb_users=30, nb_items=10, 
-                 internal_embedding_size=3,
-                 displayed_users_embedding_size=2,
-                 displayed_items_embedding_size=2,
-                 noise_size=3,
+    def __init__(self, nb_users_men=30, nb_users_women=30, 
+                 internal_embedding_size=10,
                  seed=None):
-        self.nb_users = nb_users
-        self.nb_items = nb_items
-        self.internal_embedding_size = internal_embedding_size
-        self.displayed_users_embedding_size = displayed_users_embedding_size
-        self.displayed_items_embedding_size = displayed_items_embedding_size
-        self.noise_size = noise_size
-        self._rng = np.random.RandomState(seed)
         
-        self.action_size = self.nb_items
-        self.sampling_limit = nb_users * nb_items
+        self.nb_users_men = nb_users_men
+        self.nb_users_women = nb_users_women
+        self.internal_embedding_size = internal_embedding_size
+        self._rng = np.random.RandomState(seed)
+        #What about the left users?
+        self.action_size = min(nb_users_men, nb_users_women)
+        self.sampling_limit = nb_users_men * nb_users_women
         self.user_mean = np.ones(self.internal_embedding_size)
         self.user_var = np.ones(self.internal_embedding_size)
         self.item_mean = np.ones(self.internal_embedding_size)
         self.item_var = np.ones(self.internal)
-        self.users_embedding = None
-        self.items_embedding = None
-        self.user_item_history = None
+        self.men_embedding = None
+        self.women_embedding = None
+        self.users_history = None
         self.z_cut_points = None
         self.done = False
 
