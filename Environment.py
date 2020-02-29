@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from copy import copy, deepcopy
 import random
 from scipy.stats import norm
 from scipy.optimize import linear_sum_assignment
@@ -8,7 +6,7 @@ from scipy.optimize import linear_sum_assignment
 
 class TinderEnv:
 
-    def __init__(self, nb_users_men=4, nb_users_women=4,
+    def __init__(self, nb_users_men=30, nb_users_women=30,
                  internal_embedding_size=10,
                  seed=None):
 
@@ -17,8 +15,8 @@ class TinderEnv:
         self.internal_embedding_size = internal_embedding_size
         self._rng = np.random.RandomState(seed)
         #What about the left users?
-        self.action_size = min(nb_users_men, nb_users_women)
-        self.sampling_limit = nb_users_men * nb_users_women
+        self.action_size = min(self.nb_users_men, self.nb_users_women)
+        self.sampling_limit = self.nb_users_men * self.nb_users_women
         self.men_mean = np.ones(self.internal_embedding_size)
         self.men_var = np.ones(self.internal_embedding_size)
         self.women_mean = np.ones(self.internal_embedding_size)
@@ -38,18 +36,25 @@ class TinderEnv:
         assert len(action) <= self.action_size
         self.action = action
 
+        #print("Number user men : "+str(self.nb_users_men))
+        #print("Number user women : "+str(self.nb_users_women))
+
         # compute potential rewards
-        potential_rewards = np.array([[self._get_user_match(j,i) for i in
-            np.argwhere(self.user_match_history[j, :] == 0).flatten()] for j in
-            range(self.nb_users_men)])
-        print("Potential rewards :"+str(potential_rewards))
+        #potential_rewards = np.array([[self._get_user_match(j,i) for i in np.argwhere(self.user_match_history[j, :] == 0).flatten()] for j in range(self.nb_users_men)])
+        potential_rewards = np.zeros((self.nb_users_men, self.nb_users_women))
+        for man in range(self.nb_users_men):
+            for woman in range(self.nb_users_women):
+                if(self.user_match_history[man][woman] == 0):
+                    potential_rewards[man][woman] = self._get_user_match(man,woman)
+
+        #print("Potential rewards :"+str(potential_rewards))
 
 
         #Let's compute the optimal number of good recommendation
         cost = -potential_rewards
         row, col = linear_sum_assignment(cost)
         optimal_reward = -cost[row, col].sum()
-        print("optimal reward :"+str(optimal_reward))
+        #print("Optimal reward :"+str(optimal_reward))
 
         # map couple as already recommended
         left_app = 0
@@ -63,17 +68,22 @@ class TinderEnv:
                 self.user_match_history[:,p[1]] = 1
                 index_left_app.append((p[0], p[1]))
 
+        #print("Couples left app: "+str(left_app))
         # compute reward R_t
         self.current_match = [self._get_user_match(p[0],p[1]) for p in action]
         self.reward = np.sum(self.current_match)
 
         #Compute the number of men and women starting using the left_app
-        new_user_man = np.random.randint(left_app+2)
-        new_user_woman = np.random.randint(left_app+2)
+        #new_user_man = np.random.randint(left_app+2)
+        new_user_man = left_app
+        #print("New user men: "+str(new_user_man))
+        #new_user_woman = np.random.randint(left_app+2)
+        new_user_woman = left_app
+        #print("New user women: "+str(new_user_woman))
 
         self.update_new_users(new_user_man, new_user_woman, index_left_app)
 
-        print("User match history : "+str(self.user_match_history))
+        #print("User match history : "+str(self.user_match_history))
 
         # check if done
         if self.user_match_history.sum() == self.sampling_limit:
@@ -147,6 +157,8 @@ class TinderEnv:
             self.user_match_history = np.append(self.user_match_history, [np.zeros(new_user_woman)]*self.nb_users_men, axis=1)
             self.nb_users_women += new_user_woman
 
+        self.action_size = min(self.nb_users_men, self.nb_users_women)
+        self.sampling_limit = self.nb_users_men * self.nb_users_women
 
 
 if __name__ == "__main__":
