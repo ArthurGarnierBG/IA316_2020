@@ -15,7 +15,7 @@ def run_exp(agent, env, nb_steps, env_seed):
 
         # Update agent.
         agent.update(reward)
-        context = next_context
+        #context = next_context
 
         # Save history.
         #context[i] = context

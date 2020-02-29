@@ -48,8 +48,8 @@ class TinderEnv:
         #Let's compute the optimal number of good recommendation
         cost = -potential_rewards
         row, col = linear_sum_assignment(cost)
-        optimal_return = -cost[row, col].sum()
-        print("optimal reward :"+str(optimal_return))
+        optimal_reward = -cost[row, col].sum()
+        print("optimal reward :"+str(optimal_reward))
 
         # map couple as already recommended
         left_app = 0
@@ -67,6 +67,14 @@ class TinderEnv:
         self.current_match = [self._get_user_match(p[0],p[1]) for p in action]
         self.reward = np.sum(self.current_match)
 
+        #Compute the number of men and women starting using the left_app
+        new_user_man = np.random.randint(left_app+2)
+        new_user_woman = np.random.randint(left_app+2)
+
+        self.update_new_users(new_user_man, new_user_woman, index_left_app)
+
+        print("User match history : "+str(self.user_match_history))
+
         # check if done
         if self.user_match_history.sum() == self.sampling_limit:
             self.done = True
@@ -74,13 +82,7 @@ class TinderEnv:
         #Compute the possible recommendations based on the match history
         self.possible_recommendation = [[i for i in np.argwhere(self.user_match_history[j, :] ==0).flatten()] for j in range(self.nb_users_men)]
 
-        #Compute the number of men and women starting using the left_app
-        new_user_man = np.random.randint(left_app+2)
-        new_user_woman = np.random.randint(left_app+2)
-
-        self.update_new_users(new_user_man, new_user_woman, index_left_app)
-
-        return self.reward, self.men_embedding, self.women_embedding, self.possible_recommendation, self.done, optimal_return
+        return self.reward, self.men_embedding, self.women_embedding, self.possible_recommendation, self.done, optimal_reward
 
     def reset(self, seed=None):
         self._rng = np.random.RandomState(seed)
@@ -162,6 +164,8 @@ if __name__ == "__main__":
 
     recommendation = np.array([(0,0), (1,3), (2,2), (3,1)])
 
-    reward, men_embedding, women_embedding, possible_recommendation, done, optimal_return = env.step(recommendation)
+    reward, men_embedding, women_embedding, possible_recommendation, done, optimal_reward = env.step(recommendation)
+
+    print("possible recommendation : "+str(possible_recommendation))
 
     print('reward: ', reward)
