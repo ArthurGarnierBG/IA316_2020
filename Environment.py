@@ -128,21 +128,25 @@ class TinderEnv:
     def reset(self, seed=None):
         self._rng = np.random.RandomState(seed)
         self.action_size = min(self.nb_users_men, self.nb_users_women)
-        X,yy = make_blobs(n_samples=(self.nb_users_men+ self.nb_users_women)*100, n_features=self.internal_embedding_size, centers=self.nb_classes, cluster_std=self.std, center_box=(-1.0, 1.0), shuffle=True, random_state=self._rng )
+        #Make more than we need data
+        self.X, self.y = make_blobs(n_samples=(self.nb_users_men + self.nb_users_women)*100, n_features=self.internal_embedding_size, centers=self.nb_classes, cluster_std=self.std, center_box=(-1.0, 1.0), shuffle=True, random_state=self._rng)
         self.indice = [i for i in range((self.nb_users_men+self.nb_users_women)*100)]
-        indice = np.random.choice(self.indice,self.nb_users_men+self.nb_users_women, replace=False)
+        #Delete the users indices that start coming in the app
+        indice = np.random.choice(self.indice, self.nb_users_men+self.nb_users_women, replace=False)
         self.indice = np.delete(self.indice,indice)
-        self.men_embedding,self.women_embedding,self.men_class,self.women_class,self.X,self.y = X[indice[0:self.nb_users_men]],X[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]],yy[indice[0:self.nb_users_men]],yy[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]],X,yy
+        #Men and women features
+        self.men_embedding = self.X[indice[0:self.nb_users_men]]
+        self.women_embedding = self.X[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]]
+        #Classes
+        self.men_class = self.y[indice[0:self.nb_users_men]]
+        self.women_class = self.y[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]]
         self.match_score = self.Proba(self.nb_classes)
-
-
         #self.women_embedding = self.get_new_user_women(self.nb_users_women)
         #self.kmeans = KMeans(n_clusters=self.nb_classes, random_state=self._rng).fit(np.concatenate([self.men_embedding,self.women_embedding]))
         #kmeans.labels_)
         #kmeans.predict([[0, 0], [12, 3]]))
         #kmeans.cluster_centers_
         #kmeans.inertia_
-
 
         z_mean = self.men_mean.dot(self.women_mean)
         z_var = self.men_var.dot(self.women_var) + self.men_var.dot(np.square(self.women_mean)) + \
