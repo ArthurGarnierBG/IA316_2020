@@ -115,11 +115,11 @@ class TinderEnv:
     #Que fait cette fonction?
     def Proba(self,nb_classes):
         score = []
+        top = np.random.choice(nb_classes,nb_classes,replace=False)
         for i in range(nb_classes):
             match_score=[]
-            top = np.random.choice(nb_classes,1)
             for j in range(nb_classes):
-                if j==top:
+                if j==top[i]:
                     match_score.append([0.4,0.9])
                 else :
                     match_score.append([0.9,0.96])
