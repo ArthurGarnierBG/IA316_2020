@@ -112,6 +112,7 @@ class TinderEnv:
 
         return self.reward, self.men_embedding, self.women_embedding, self.men_class, self.women_class, self.possible_recommendation, self.done, optimal_reward
 
+    #Que fait cette fonction?
     def Proba(self,nb_classes):
         score = []
         for i in range(nb_classes):
@@ -185,9 +186,9 @@ class TinderEnv:
     #    return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_women, self.internal_embedding_size))
     def get_new_user(self, nb_users):
       indice = np.random.choice(self.indice, nb_users, replace=False)
-      self.indice = np.delete(self.indice,indice)
-      Xuser,yuser = X[indice[0:nb_users]],yy[indice[0:nb_users]]
-      return Xuser,yuser
+      self.indice = np.delete(self.indice, indice)
+      X_user,y_user = self.X[indice[0:nb_users]], self.y[indice[0:nb_users]]
+      return X_user,y_user
 
 
     #Update embeddings and user_match_history
@@ -201,12 +202,14 @@ class TinderEnv:
             self.user_match_history = np.delete(self.user_match_history, left_woman_index, 1)
             self.men_embedding = np.delete(self.men_embedding, left_man_index, 0)
             self.women_embedding = np.delete(self.women_embedding, left_woman_index, 0)
+            self.men_class = np.delete(self.men_class, left_man_index)
+            self.women_class = np.delete(self.women_class, left_woman_index)
             #Update nb of men and women
             self.nb_users_men -= len(index_left_couple)
             self.nb_users_women -= len(index_left_couple)
 
         if(new_user_man > 0):
-            man_embedding,man_class = self.get_new_user(new_user_man)
+            man_embedding, man_class = self.get_new_user(new_user_man)
             self.men_class = np.append(self.men_class,man_class,axis=0)
             self.men_embedding = np.append(self.men_embedding, man_embedding, axis=0)
             self.user_match_history = np.append(self.user_match_history, [np.zeros(self.nb_users_women)]*new_user_man, axis=0)
@@ -230,24 +233,27 @@ class TinderEnv:
         for i in range(nb_user_men):
             if(user_match_history[i,:].sum() == nb_user_women):
                 man_embedding, man_class = self.get_new_user(1)
-                self.men_class = np.append(self.men_class,man_class,axis=0)
-                #Delete previous match and features
+                #Delete previous match, features and classes
                 self.men_embedding = np.delete(self.men_embedding, i, 0)
                 self.user_match_history = np.delete(self.user_match_history, i, 0)
-                #Append new features
+                self.men_class = np.delete(self.men_class, i)
+                #Append new features, history and class
                 self.men_embedding = np.append(self.men_embedding, man_embedding, axis=0)
                 self.user_match_history = np.r_[self.user_match_history, np.zeros((1,self.nb_users_women))]
+                self.men_class = np.append(self.men_class, man_class, axis=0)
+
 
         for j in range(nb_user_women):
             if(user_match_history[:,j].sum() == nb_user_men):
                 woman_embedding, woman_class = self.get_new_user(1)
-                self.women_class = np.append(self.women_class,woman_class,axis=0)
-                #Delete previous match and features
+                #Delete previous match, features and classes
                 self.women_embedding = np.delete(self.women_embedding, j, 0)
                 self.user_match_history = np.delete(self.user_match_history, j, 1)
-                #Append new features
+                self.women_class = np.delete(self.women_class, j)
+                #Append new features, history and class
                 self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
                 self.user_match_history = np.c_[self.user_match_history, np.zeros(self.nb_users_men)]
+                self.women_class = np.append(self.women_class, woman_class, axis=0)
 
         self.action_size = min(self.nb_users_men, self.nb_users_women)
         self.sampling_limit = self.nb_users_men * self.nb_users_women
