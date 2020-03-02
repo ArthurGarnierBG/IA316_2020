@@ -22,8 +22,9 @@ def run_exp(agent, env, nb_steps, env_seed):
         #print(env.user_match_history)
         # Select action from agent policy.
         #print("\nPossible recommendations : "+str(possible_recommendation))
-        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
-        #print("Agent recommendation : "+str(recommendation))
+        #recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
+        recommendation = agent.act(men_embedding, women_embedding, men_class, women_class, possible_recommendation)
+        print("Agent recommendation : "+str(recommendation))
         # Play action in the environment and get reward.
         rewards_list, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
@@ -70,8 +71,8 @@ if __name__ == '__main__':
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
-        agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        #agent = Pure_Random_Agent(seed=seed)
+        #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
+        agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
