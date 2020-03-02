@@ -17,29 +17,30 @@ def run_exp(agent, env, nb_steps, env_seed):
     men_embedding, women_embedding, men_class, women_class, possible_recommendation = env.reset(env_seed)
 
     for i in range(nb_steps):
+        #print("\nStep "+str(i))
+        #print("Nb steps:"+str(nb_steps))
+        #print(env.user_match_history)
         # Select action from agent policy.
         #print("\nPossible recommendations : "+str(possible_recommendation))
-        recommendation = agent.act(men_embedding, women_embedding, possible_recommendation)
+        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
         #print("Agent recommendation : "+str(recommendation))
         # Play action in the environment and get reward.
-        print("\nStep "+str(i))
-        #print(env.user_match_history)
-
-        rewards, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
+        rewards_list, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
         # Update agent. careful possible_recommendation of former state
         agent.update(rewards)
         #context = next_context
 
         # Save history.
-        tot_reward = np.array(rewards).sum()
+        tot_reward = np.array(rewards_list).sum()
         rewards[i] = tot_reward
         regrets[i] = optimal_reward - tot_reward
         nb_user_men[i] = env.nb_users_men
         nb_user_women[i] = env.nb_users_women
 
-    reward = np.array(rewards).sum()
+    reward = np.sum(rewards)
     regret = np.sum(regrets)
+    #print("Rewards: "+str(rewards))
 
     #print("\nRewards at each iteration : "+str(rewards))
     #print("Regrets at each iteration : "+str(regrets))
@@ -69,14 +70,12 @@ if __name__ == '__main__':
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
-        agent = Smart_Random_Agent(seed=seed)
+        agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
         #agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
-        #print("\nStep "+str(i))
-        #print(exp['nb_user_men'])
-        #print(exp['nb_user_women'])
+
 
     plt.plot(regrets.mean(axis=0), color='blue')
     plt.plot(np.quantile(regrets, 0.05,axis=0), color='grey', alpha=0.5)
