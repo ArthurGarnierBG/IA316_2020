@@ -98,17 +98,16 @@ class TinderEnv:
         new_user_woman = left_app
         #print("New user women: "+str(new_user_woman))
 
-        print("User match history before replacement: "+str(self.user_match_history))
-        print("Man class before replacement : "+str(self.men_class))
-        print("Woman class before replacement : "+str(self.women_class))
+        #print("User match history before replacement: "+str(self.user_match_history))
+        #print("Man class before replacement : "+str(self.men_class))
+        #print("Woman class before replacement : "+str(self.women_class))
 
         self.update_new_users(new_user_man, new_user_woman, index_left_app)
         self.replace_full_rec(self.user_match_history)
 
-        print("Man class after replacement : "+str(self.men_class))
-        print("Woman class after replacement : "+str(self.women_class))
-
-        print("User match history after replacement: "+str(self.user_match_history))
+        #print("Man class after replacement : "+str(self.men_class))
+        #print("Woman class after replacement : "+str(self.women_class))
+        #print("User match history after replacement: "+str(self.user_match_history))
 
         # check if done
         if self.user_match_history.sum() == self.sampling_limit:
@@ -217,7 +216,7 @@ class TinderEnv:
 
         if(new_user_man > 0):
             man_embedding, man_class = self.get_new_user(new_user_man)
-            print("New man class : "+str(man_class))
+            #print("New man class : "+str(man_class))
             self.men_class = np.append(self.men_class, man_class, axis=0)
             self.men_embedding = np.append(self.men_embedding, man_embedding, axis=0)
             self.user_match_history = np.append(self.user_match_history, [np.zeros(self.nb_users_women)]*new_user_man, axis=0)
@@ -225,7 +224,7 @@ class TinderEnv:
 
         if(new_user_woman > 0):
             woman_embedding,woman_class = self.get_new_user(new_user_woman)
-            print("New woman class : "+str(woman_class))
+            #print("New woman class : "+str(woman_class))
             self.women_class = np.append(self.women_class, woman_class, axis=0)
             self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
             self.user_match_history = np.append(self.user_match_history, [np.zeros(new_user_woman)]*self.nb_users_men, axis=1)
@@ -242,7 +241,7 @@ class TinderEnv:
         for i in range(nb_user_men):
             if(user_match_history[i,:].sum() == nb_user_women):
                 man_embedding, man_class = self.get_new_user(1)
-                print("New man class : "+str(man_class))
+                #print("New man class : "+str(man_class))
                 #Delete previous match, features and classes
                 self.men_embedding = np.delete(self.men_embedding, i, 0)
                 self.user_match_history = np.delete(self.user_match_history, i, 0)
@@ -256,7 +255,7 @@ class TinderEnv:
         for j in range(nb_user_women):
             if(user_match_history[:,j].sum() == nb_user_men):
                 woman_embedding, woman_class = self.get_new_user(1)
-                print("New woman class : "+str(woman_class))
+                #print("New woman class : "+str(woman_class))
                 #Delete previous match, features and classes
                 self.women_embedding = np.delete(self.women_embedding, j, 0)
                 self.user_match_history = np.delete(self.user_match_history, j, 1)
