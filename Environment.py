@@ -2,14 +2,15 @@ import numpy as np
 import random
 from scipy.stats import norm
 from scipy.optimize import linear_sum_assignment
-
+from sklearn.datasets import make_blobs
 
 class TinderEnv:
 
-    def __init__(self, nb_users_men=10, nb_users_women=10,
-                 internal_embedding_size=10,
-                 seed=None):
+    def __init__(self, nb_users_men=300, nb_users_women=700,nb_classes = 3
+                 internal_embedding_size=10,std = 5.0, seed=None):
 
+        self.std = std
+        self.nb_classes = nb_classes
         self.nb_users_men = nb_users_men
         self.nb_users_women = nb_users_women
         self.internal_embedding_size = internal_embedding_size
@@ -22,7 +23,9 @@ class TinderEnv:
         self.women_mean = np.ones(self.internal_embedding_size)
         self.women_var = np.ones(self.internal_embedding_size)
         self.men_embedding = None
+        self.men_class = None
         self.women_embedding = None
+        self.women_class = None
         self.user_match_history = None
         self.z_cut_points = None
         self.done = False
@@ -96,15 +99,15 @@ class TinderEnv:
         #Compute the possible recommendations based on the match history
         self.possible_recommendation = [[i for i in np.argwhere(self.user_match_history[j, :] ==0).flatten()] for j in range(self.nb_users_men)]
 
-        return self.reward, self.men_embedding, self.women_embedding, self.possible_recommendation, self.done, optimal_reward
+        return self.reward, self.men_embedding, self.women_embedding,self.men_class,self.women_class ,self.possible_recommendation, self.done, optimal_reward
 
     def reset(self, seed=None):
         self._rng = np.random.RandomState(seed)
         self.action_size = min(self.nb_users_men, self.nb_users_women)
 
         # create users and items embedding matrix
-        self.men_embedding = self.get_new_user_men(self.nb_users_men)
-        self.women_embedding = self.get_new_user_women(self.nb_users_women)
+        self.men_embedding,self.women_embedding,self.men_class,self.women_class = self.get_new_user(self.nb_users_men,self.nb_users_women)
+        #self.women_embedding = self.get_new_user_women(self.nb_users_women)
 
         z_mean = self.men_mean.dot(self.women_mean)
         z_var = self.men_var.dot(self.women_var) + self.men_var.dot(np.square(self.women_mean)) + \
@@ -118,7 +121,7 @@ class TinderEnv:
         self.possible_recommendation = [[i for i in np.argwhere(self.user_match_history[j, :] ==
             0).flatten()] for j in range(self.nb_users_men)]
 
-        return self.men_embedding, self.women_embedding, self.possible_recommendation
+        return self.men_embedding, self.women_embedding,self.men_class,self.women_class ,self.possible_recommendation
 
     def _get_user_match(self, user1, user2):
         real_score = self.men_embedding[user1].dot(self.women_embedding[user2])
@@ -129,12 +132,18 @@ class TinderEnv:
         return match_score
 
     #Return features for new users
-    def get_new_user_men(self, nb_users_men):
-        return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_men, self.internal_embedding_size))
+    #def get_new_user_men(self, nb_users_men):
+    #    return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_men, self.internal_embedding_size))
 
-    def get_new_user_women(self, nb_users_women):
-        return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_women, self.internal_embedding_size))
+    #def get_new_user_women(self, nb_users_women):
+    #    return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_women, self.internal_embedding_size))
+    def get_new_user(self,nb_users_men,nb_users_women):
+      X,yy = make_blobs(n_samples=100, n_features=self.internal_embedding_size, centers=self.nb_classes, cluster_std=self.std, center_box=(-100.0, 100.0), shuffle=True, random_state=None)
+      indice = np.random.choice(nb_users_men+nb_users_women,nb_users_women, replace=False)
+      Xmen,Xwomen,yman,ywomen = X[0:nb_users_men],X[nb_users_men:],yy[0:nb_users_men],yy[nb_users_men:]
+      return Xmen,Xwomen,yman,ywomen
 
+      
     #Update embeddings and user_match_history
     def update_new_users(self, new_user_man, new_user_woman, index_left_couple):
         #Compute indices of men and women leaving the app
