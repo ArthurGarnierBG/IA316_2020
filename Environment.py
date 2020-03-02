@@ -6,8 +6,13 @@ from sklearn.datasets import make_blobs
 
 class TinderEnv:
 
-    def __init__(self, nb_users_men=300, nb_users_women=700,nb_classes = 3,
-                 internal_embedding_size=10,std = 5.0, seed=None):
+    def __init__(self,
+                nb_users_men=10,
+                nb_users_women=10,
+                nb_classes = 3,
+                internal_embedding_size=10,
+                std = 5.0,
+                seed=None):
 
         self.std = std
         self.nb_classes = nb_classes
@@ -15,7 +20,6 @@ class TinderEnv:
         self.nb_users_women = nb_users_women
         self.internal_embedding_size = internal_embedding_size
         self._rng = np.random.RandomState(seed)
-        #What about the left users?
         self.action_size = min(self.nb_users_men, self.nb_users_women)
         self.sampling_limit = self.nb_users_men * self.nb_users_women
         self.men_mean = np.ones(self.internal_embedding_size)
@@ -26,7 +30,9 @@ class TinderEnv:
         self.men_class = None
         self.women_embedding = None
         self.women_class = None
-        self.X=None
+        #X?
+        self.X = None
+        #yy?
         self.yy = None
         self.user_match_history = None
         self.z_cut_points = None
@@ -61,8 +67,8 @@ class TinderEnv:
         #Let's compute the optimal number of good recommendation
         cost = -potential_rewards
         row, col = linear_sum_assignment(cost)
-        #optimal_reward = -cost[row, col].sum()
-        optimal_reward = [self._get_user_match(row[i],col[i]) for i in range(len(col))]
+        optimal_reward = -cost[row, col].sum()
+        #optimal_reward = [self._get_user_match(row[i],col[i]) for i in range(len(col))]
         #print("Optimal reward :"+str(optimal_reward))
 
         # map couple as already recommended
@@ -95,7 +101,6 @@ class TinderEnv:
         self.update_new_users(new_user_man, new_user_woman, index_left_app)
         self.replace_full_rec(self.user_match_history)
 
-
         #print("User match history : "+str(self.user_match_history))
 
         # check if done
@@ -105,20 +110,21 @@ class TinderEnv:
         #Compute the possible recommendations based on the match history
         self.possible_recommendation = [[i for i in np.argwhere(self.user_match_history[j, :] ==0).flatten()] for j in range(self.nb_users_men)]
 
-        return self.reward, self.men_embedding, self.women_embedding,self.men_class,self.women_class ,self.possible_recommendation, self.done, optimal_reward
+        return self.reward, self.men_embedding, self.women_embedding, self.men_class, self.women_class, self.possible_recommendation, self.done, optimal_reward
+
     def Proba(self,nb_classes):
-        
         score = []
         for i in range(nb_classes):
             match_score=[]
             top = np.random.choice(nb_classes,1)
             for j in range(nb_classes):
                 if j==top:
-                    match_score.append([0.4,0.9]) 
-                else : 
+                    match_score.append([0.4,0.9])
+                else :
                     match_score.append([0.9,0.96])
             score.append(match_score)
         return score
+
     def reset(self, seed=None):
         self._rng = np.random.RandomState(seed)
         self.action_size = min(self.nb_users_men, self.nb_users_women)
@@ -128,18 +134,14 @@ class TinderEnv:
         self.indice = np.delete(self.indice,indice)
         self.men_embedding,self.women_embedding,self.men_class,self.women_class,self.X,self.y = X[indice[0:self.nb_users_men]],X[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]],yy[indice[0:self.nb_users_men]],yy[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]],X,yy
         self.match_score = self.Proba(self.nb_classes)
-      
-         
+
+
         #self.women_embedding = self.get_new_user_women(self.nb_users_women)
         #self.kmeans = KMeans(n_clusters=self.nb_classes, random_state=self._rng).fit(np.concatenate([self.men_embedding,self.women_embedding]))
-
         #kmeans.labels_)
-
-#kmeans.predict([[0, 0], [12, 3]]))
-
-#kmeans.cluster_centers_
- 
-#kmeans.inertia_
+        #kmeans.predict([[0, 0], [12, 3]]))
+        #kmeans.cluster_centers_
+        #kmeans.inertia_
 
 
         z_mean = self.men_mean.dot(self.women_mean)
@@ -154,16 +156,15 @@ class TinderEnv:
         self.possible_recommendation = [[i for i in np.argwhere(self.user_match_history[j, :] ==
             0).flatten()] for j in range(self.nb_users_men)]
 
-        return self.men_embedding, self.women_embedding,self.men_class,self.women_class ,self.possible_recommendation
+        return self.men_embedding, self.women_embedding, self.men_class, self.women_class, self.possible_recommendation
 
     def _get_user_match(self, user1, user2):
-        
         p = np.random.random()
         if p < self.match_score[self.men_class[user1]][self.women_class[user2]][0]:
             score = 0
         elif self.match_score[self.men_class[user1]][self.women_class[user2]][0]<=p < self.match_score[self.men_class[user1]][self.women_class[user2]][1]:
             score = 1
-        else: 
+        else:
             score = 4
         #real_score = self.men_embedding[user1].dot(self.women_embedding[user2])
         #print("real score: "+str(real_score))
@@ -178,13 +179,13 @@ class TinderEnv:
 
     #def get_new_user_women(self, nb_users_women):
     #    return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_women, self.internal_embedding_size))
-    def get_new_user(self,nb_users):
-      indice = np.random.choice(self.indice,nb_users, replace=False)
+    def get_new_user(self, nb_users):
+      indice = np.random.choice(self.indice, nb_users, replace=False)
       self.indice = np.delete(self.indice,indice)
       Xuser,yuser = X[indice[0:nb_users]],yy[indice[0:nb_users]]
       return Xuser,yuser
 
-      
+
     #Update embeddings and user_match_history
     def update_new_users(self, new_user_man, new_user_woman, index_left_couple):
         #Compute indices of men and women leaving the app
@@ -224,7 +225,7 @@ class TinderEnv:
 
         for i in range(nb_user_men):
             if(user_match_history[i,:].sum() == nb_user_women):
-                man_embedding,man_class = self.get_new_user(1)
+                man_embedding, man_class = self.get_new_user(1)
                 self.men_class = np.append(self.men_class,man_class,axis=0)
                 #Delete previous match and features
                 self.men_embedding = np.delete(self.men_embedding, i, 0)
@@ -235,8 +236,8 @@ class TinderEnv:
 
         for j in range(nb_user_women):
             if(user_match_history[:,j].sum() == nb_user_men):
-                woman_embedding,woman_class = self.get_new_user(1)
-                self.womenn_class = np.append(self.women_class,woman_class,axis=0)
+                woman_embedding, woman_class = self.get_new_user(1)
+                self.women_class = np.append(self.women_class,woman_class,axis=0)
                 #Delete previous match and features
                 self.women_embedding = np.delete(self.women_embedding, j, 0)
                 self.user_match_history = np.delete(self.user_match_history, j, 1)

@@ -14,7 +14,7 @@ def run_exp(agent, env, nb_steps, env_seed):
     nb_user_men = np.zeros(nb_steps)
     nb_user_women = np.zeros(nb_steps)
 
-    men_embedding, women_embedding, possible_recommendation = env.reset(env_seed)
+    men_embedding, women_embedding, men_class, women_class, possible_recommendation = env.reset(env_seed)
 
     for i in range(nb_steps):
         # Select action from agent policy.
@@ -25,14 +25,14 @@ def run_exp(agent, env, nb_steps, env_seed):
         print("\nStep "+str(i))
         print(env.user_match_history)
 
-        reward, men_embedding, women_embedding, possible_recommendation, done, optimal_reward = env.step(recommendation)
+        rewards, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
         # Update agent. careful possible_recommendation of former state
         agent.update(reward)
         #context = next_context
 
         # Save history.
-        rewards[i] = reward
+        rewards[i] = np.array(rewards).sum()
         regrets[i] = optimal_reward - reward
         nb_user_men[i] = env.nb_users_men
         nb_user_women[i] = env.nb_users_women
