@@ -7,9 +7,9 @@ from sklearn.datasets import make_blobs
 class TinderEnv:
 
     def __init__(self,
-                nb_users_men=10,
-                nb_users_women=10,
-                nb_classes = 3,
+                nb_users_men=30,
+                nb_users_women=30,
+                nb_classes = 5,
                 internal_embedding_size=10,
                 std = 5.0,
                 seed=None):
@@ -98,10 +98,16 @@ class TinderEnv:
         new_user_woman = left_app
         #print("New user women: "+str(new_user_woman))
 
+        #print("User match history before replacement: "+str(self.user_match_history))
+        #print("Man class before replacement : "+str(self.men_class))
+        #print("Woman class before replacement : "+str(self.women_class))
+
         self.update_new_users(new_user_man, new_user_woman, index_left_app)
         self.replace_full_rec(self.user_match_history)
 
-        #print("User match history : "+str(self.user_match_history))
+        #print("Man class after replacement : "+str(self.men_class))
+        #print("Woman class after replacement : "+str(self.women_class))
+        #print("User match history after replacement: "+str(self.user_match_history))
 
         # check if done
         if self.user_match_history.sum() == self.sampling_limit:
@@ -134,8 +140,12 @@ class TinderEnv:
         self.indice = [i for i in range((self.nb_users_men+self.nb_users_women)*100)]
         #Delete the users indices that start coming in the app
         indice = np.random.choice(self.indice, self.nb_users_men+self.nb_users_women, replace=False)
+<<<<<<< HEAD
         for el in indice:
           self.indice.remove(el)
+=======
+        self.indice = np.delete(self.indice, indice)
+>>>>>>> 7c115fbcc272a2910fa93cac1d99ab6f43897754
         #Men and women features
         self.men_embedding = self.X[indice[0:self.nb_users_men]]
         self.women_embedding = self.X[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]]
@@ -187,8 +197,12 @@ class TinderEnv:
     #    return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_women, self.internal_embedding_size))
     def get_new_user(self, nb_users):
       indice = np.random.choice(self.indice, nb_users, replace=False)
+<<<<<<< HEAD
       for el in indice:
         self.indice.remove(el)
+=======
+      self.indice = np.delete(self.indice, indice)
+>>>>>>> 7c115fbcc272a2910fa93cac1d99ab6f43897754
       X_user,y_user = self.X[indice[0:nb_users]], self.y[indice[0:nb_users]]
       return X_user,y_user
 
@@ -212,14 +226,16 @@ class TinderEnv:
 
         if(new_user_man > 0):
             man_embedding, man_class = self.get_new_user(new_user_man)
-            self.men_class = np.append(self.men_class,man_class,axis=0)
+            #print("New man class : "+str(man_class))
+            self.men_class = np.append(self.men_class, man_class, axis=0)
             self.men_embedding = np.append(self.men_embedding, man_embedding, axis=0)
             self.user_match_history = np.append(self.user_match_history, [np.zeros(self.nb_users_women)]*new_user_man, axis=0)
             self.nb_users_men += new_user_man
 
         if(new_user_woman > 0):
             woman_embedding,woman_class = self.get_new_user(new_user_woman)
-            self.women_class = np.append(self.women_class,woman_class,axis=0)
+            #print("New woman class : "+str(woman_class))
+            self.women_class = np.append(self.women_class, woman_class, axis=0)
             self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
             self.user_match_history = np.append(self.user_match_history, [np.zeros(new_user_woman)]*self.nb_users_men, axis=1)
             self.nb_users_women += new_user_woman
@@ -235,6 +251,7 @@ class TinderEnv:
         for i in range(nb_user_men):
             if(user_match_history[i,:].sum() == nb_user_women):
                 man_embedding, man_class = self.get_new_user(1)
+                #print("New man class : "+str(man_class))
                 #Delete previous match, features and classes
                 self.men_embedding = np.delete(self.men_embedding, i, 0)
                 self.user_match_history = np.delete(self.user_match_history, i, 0)
@@ -248,6 +265,7 @@ class TinderEnv:
         for j in range(nb_user_women):
             if(user_match_history[:,j].sum() == nb_user_men):
                 woman_embedding, woman_class = self.get_new_user(1)
+                #print("New woman class : "+str(woman_class))
                 #Delete previous match, features and classes
                 self.women_embedding = np.delete(self.women_embedding, j, 0)
                 self.user_match_history = np.delete(self.user_match_history, j, 1)
