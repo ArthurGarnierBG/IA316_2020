@@ -28,16 +28,17 @@ def run_exp(agent, env, nb_steps, env_seed):
         rewards, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
         # Update agent. careful possible_recommendation of former state
-        agent.update(reward)
+        agent.update(rewards)
         #context = next_context
 
         # Save history.
-        rewards[i] = np.array(rewards).sum()
-        regrets[i] = optimal_reward - reward
+        tot_reward = np.array(rewards).sum()
+        rewards[i] = tot_reward
+        regrets[i] = optimal_reward - tot_reward
         nb_user_men[i] = env.nb_users_men
         nb_user_women[i] = env.nb_users_women
 
-    reward = rewards.sum()
+    reward = np.array(rewards).sum()
     regret = np.sum(regrets)
 
     #print("\nRewards at each iteration : "+str(rewards))
