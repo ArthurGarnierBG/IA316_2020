@@ -6,6 +6,7 @@ import argparse
 from Environment import TinderEnv
 from Smart_Random_Agent import Smart_Random_Agent
 from Pure_Random_Agent import Pure_Random_Agent
+from Epsilon_Greedy_Agent import Epsilon_Greedy_Agent
 
 
 def run_exp(agent, env, nb_steps, env_seed):
@@ -22,14 +23,21 @@ def run_exp(agent, env, nb_steps, env_seed):
         #print(env.user_match_history)
         # Select action from agent policy.
         #print("\nPossible recommendations : "+str(possible_recommendation))
+        #Smart random
         #recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
+        #Random Pure
         recommendation = agent.act(men_embedding, women_embedding, men_class, women_class, possible_recommendation)
-        print("Agent recommendation : "+str(recommendation))
+        #Epsilon_Greedy_Agent
+        #recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
+
+        #print("Agent recommendation : "+str(recommendation))
+        #print(men_class)
         # Play action in the environment and get reward.
         rewards_list, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
         # Update agent. careful possible_recommendation of former state
-        agent.update(rewards)
+        agent.update(rewards_list)
+        #agent.update(rewards_list, recommendation, men_class, women_class)
         #context = next_context
 
         # Save history.
@@ -65,13 +73,14 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
     nb_exp = args["exp"]
     nb_steps = args["steps"]
-    seed = 0
+    seed = 2020
     regret = np.zeros(nb_exp)
     regrets = np.zeros((nb_exp, nb_steps))
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
         #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
+        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.2, nb_classes=env.nb_classes)
         agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']

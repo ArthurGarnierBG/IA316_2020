@@ -7,8 +7,8 @@ from sklearn.datasets import make_blobs
 class TinderEnv:
 
     def __init__(self,
-                nb_users_men=50,
-                nb_users_women=50,
+                nb_users_men=40,
+                nb_users_women=100,
                 nb_classes = 10,
                 internal_embedding_size=10,
                 std = 5.0,
@@ -33,7 +33,7 @@ class TinderEnv:
         #X?
         self.X = None
         #yy?
-        self.yy = None
+        self.y = None
         self.user_match_history = None
         self.z_cut_points = None
         self.kmeans = None
@@ -199,8 +199,8 @@ class TinderEnv:
       for el in indice:
         self.indice.remove(el)
 
-      X_user,y_user = self.X[indice[0:nb_users]], self.y[indice[0:nb_users]]
-      return X_user,y_user
+      X_user, y_user = self.X[indice[0:nb_users]], self.y[indice[0:nb_users]]
+      return X_user, y_user
 
 
     #Update embeddings and user_match_history
@@ -229,7 +229,7 @@ class TinderEnv:
             self.nb_users_men += new_user_man
 
         if(new_user_woman > 0):
-            woman_embedding,woman_class = self.get_new_user(new_user_woman)
+            woman_embedding, woman_class = self.get_new_user(new_user_woman)
             #print("New woman class : "+str(woman_class))
             self.women_class = np.append(self.women_class, woman_class, axis=0)
             self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
@@ -296,4 +296,3 @@ if __name__ == "__main__":
       print("possible recommendation : "+str(possible_recommendation))
       print(step)
       print('reward: ', reward)
-
