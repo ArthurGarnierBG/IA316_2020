@@ -6,7 +6,7 @@ from scipy.optimize import linear_sum_assignment
 
 class TinderEnv:
 
-    def __init__(self, nb_users_men=30, nb_users_women=30,
+    def __init__(self, nb_users_men=10, nb_users_women=10,
                  internal_embedding_size=10,
                  seed=None):
 
@@ -49,11 +49,11 @@ class TinderEnv:
 
         #print("Potential rewards :"+str(potential_rewards))
 
-
         #Let's compute the optimal number of good recommendation
         cost = -potential_rewards
         row, col = linear_sum_assignment(cost)
-        optimal_reward = -cost[row, col].sum()
+        #optimal_reward = -cost[row, col].sum()
+        optimal_reward = [self._get_user_match(row[i],col[i]) for i in range(len(col))]
         #print("Optimal reward :"+str(optimal_reward))
 
         # map couple as already recommended
@@ -71,7 +71,9 @@ class TinderEnv:
         #print("Couples left app: "+str(left_app))
         # compute reward R_t
         self.current_match = [self._get_user_match(p[0],p[1]) for p in action]
-        self.reward = np.sum(self.current_match)
+        #print("Current match : "+str(self.current_match))
+        #self.reward = np.sum(self.current_match)
+        self.reward = self.current_match
 
         #Compute the number of men and women starting using the left_app
         #new_user_man = np.random.randint(left_app+2)
@@ -82,6 +84,8 @@ class TinderEnv:
         #print("New user women: "+str(new_user_woman))
 
         self.update_new_users(new_user_man, new_user_woman, index_left_app)
+        self.replace_full_rec(self.user_match_history)
+
 
         #print("User match history : "+str(self.user_match_history))
 
@@ -134,16 +138,17 @@ class TinderEnv:
     #Update embeddings and user_match_history
     def update_new_users(self, new_user_man, new_user_woman, index_left_couple):
         #Compute indices of men and women leaving the app
-        left_man_index = [index_left_couple[i][0] for i in range(len(index_left_couple))]
-        left_woman_index = [index_left_couple[i][1] for i in range(len(index_left_couple))]
-        #Delete left users from embeddings and history
-        self.user_match_history = np.delete(self.user_match_history, left_man_index, 0)
-        self.user_match_history = np.delete(self.user_match_history, left_woman_index, 1)
-        self.men_embedding = np.delete(self.men_embedding, left_man_index, 0)
-        self.women_embedding = np.delete(self.women_embedding, left_woman_index, 0)
-        #Update nb of men and women
-        self.nb_users_men -= len(index_left_couple)
-        self.nb_users_women -= len(index_left_couple)
+        if(index_left_couple != []):
+            left_man_index = [index_left_couple[i][0] for i in range(len(index_left_couple))]
+            left_woman_index = [index_left_couple[i][1] for i in range(len(index_left_couple))]
+            #Delete left users from embeddings and history
+            self.user_match_history = np.delete(self.user_match_history, left_man_index, 0)
+            self.user_match_history = np.delete(self.user_match_history, left_woman_index, 1)
+            self.men_embedding = np.delete(self.men_embedding, left_man_index, 0)
+            self.women_embedding = np.delete(self.women_embedding, left_woman_index, 0)
+            #Update nb of men and women
+            self.nb_users_men -= len(index_left_couple)
+            self.nb_users_women -= len(index_left_couple)
 
         if(new_user_man > 0):
             man_embedding = self.get_new_user_men(new_user_man)
@@ -152,13 +157,42 @@ class TinderEnv:
             self.nb_users_men += new_user_man
 
         if(new_user_woman > 0):
-            woman_embedding = self.get_new_user_men(new_user_woman)
+            woman_embedding = self.get_new_user_women(new_user_woman)
             self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
             self.user_match_history = np.append(self.user_match_history, [np.zeros(new_user_woman)]*self.nb_users_men, axis=1)
             self.nb_users_women += new_user_woman
 
         self.action_size = min(self.nb_users_men, self.nb_users_women)
         self.sampling_limit = self.nb_users_men * self.nb_users_women
+
+
+    def replace_full_rec(self, user_match_history):
+        nb_user_men = self.nb_users_men
+        nb_user_women = self.nb_users_women
+
+        for i in range(nb_user_men):
+            if(user_match_history[i,:].sum() == nb_user_women):
+                man_embedding = self.get_new_user_men(1)
+                #Delete previous match and features
+                self.men_embedding = np.delete(self.men_embedding, i, 0)
+                self.user_match_history = np.delete(self.user_match_history, i, 0)
+                #Append new features
+                self.men_embedding = np.append(self.men_embedding, man_embedding, axis=0)
+                self.user_match_history = np.r_[self.user_match_history, np.zeros((1,self.nb_users_women))]
+
+        for j in range(nb_user_women):
+            if(user_match_history[:,j].sum() == nb_user_men):
+                woman_embedding = self.get_new_user_women(1)
+                #Delete previous match and features
+                self.women_embedding = np.delete(self.women_embedding, j, 0)
+                self.user_match_history = np.delete(self.user_match_history, j, 1)
+                #Append new features
+                self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
+                self.user_match_history = np.c_[self.user_match_history, np.zeros(self.nb_users_men)]
+
+        self.action_size = min(self.nb_users_men, self.nb_users_women)
+        self.sampling_limit = self.nb_users_men * self.nb_users_women
+
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ class Smart_Random_Agent:
         col, row = linear_sum_assignment(weight)
         recommendation = [(col[i], row[i]) for i in range(len(col))]
         #What if rectangular matrix of weights ?
+        print("Agent recommendation pair: "+str(recommendation))
         return(recommendation)
 
     def update(self, reward):

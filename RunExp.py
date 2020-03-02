@@ -24,7 +24,7 @@ def run_exp(agent, env, nb_steps, env_seed):
         # Play action in the environment and get reward.
         print("\nStep "+str(i))
         print(env.user_match_history)
-        
+
         reward, men_embedding, women_embedding, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
         # Update agent. careful possible_recommendation of former state
