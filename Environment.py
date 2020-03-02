@@ -140,12 +140,10 @@ class TinderEnv:
         self.indice = [i for i in range((self.nb_users_men+self.nb_users_women)*100)]
         #Delete the users indices that start coming in the app
         indice = np.random.choice(self.indice, self.nb_users_men+self.nb_users_women, replace=False)
-<<<<<<< HEAD
+
         for el in indice:
           self.indice.remove(el)
-=======
-        self.indice = np.delete(self.indice, indice)
->>>>>>> 7c115fbcc272a2910fa93cac1d99ab6f43897754
+
         #Men and women features
         self.men_embedding = self.X[indice[0:self.nb_users_men]]
         self.women_embedding = self.X[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]]
@@ -197,12 +195,10 @@ class TinderEnv:
     #    return self._rng.normal(loc=self.men_mean, scale=self.men_var, size=(nb_users_women, self.internal_embedding_size))
     def get_new_user(self, nb_users):
       indice = np.random.choice(self.indice, nb_users, replace=False)
-<<<<<<< HEAD
+
       for el in indice:
         self.indice.remove(el)
-=======
-      self.indice = np.delete(self.indice, indice)
->>>>>>> 7c115fbcc272a2910fa93cac1d99ab6f43897754
+
       X_user,y_user = self.X[indice[0:nb_users]], self.y[indice[0:nb_users]]
       return X_user,y_user
 
