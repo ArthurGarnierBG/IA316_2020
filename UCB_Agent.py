@@ -5,7 +5,7 @@ class UCB_Agent:
     """ Special Epsilon greedy agent, with a 2-Dimensional N and Q"""
     def __init__(self, nb_classes, c=1,t=0, seed=None):
         self._c = 1
-        self._t=t
+        self._t = t
         self.nb_classes = nb_classes
         self._q = np.zeros((nb_classes, nb_classes))
         self._n = np.zeros((nb_classes, nb_classes))
@@ -41,7 +41,7 @@ class UCB_Agent:
             woman_class = women_class[pair[1]]
             self._n[man_class][woman_class] += 1
             self._q[man_class][woman_class] += (rewards[i] - self._q[man_class][woman_class])/self._n[man_class][woman_class]
-      
+
             i += 1
         self._t+=1
         print("N : " +str(self._n))

@@ -5,7 +5,7 @@ class Pure_Random_Agent:
         self._rng = np.random.RandomState(seed)
 
     #Context? men_embedding, women_embedding, possible_recommendation
-    def act(self,men_class,women_class, possible_recommendation,user_match_history):
+    def act(self, men_class, women_class, possible_recommendation, user_match_history):
         context = [men_class, women_class, possible_recommendation]
         minimum = np.argmin(np.array([len(context[0]),len(context[1])]))
         order = np.random.choice(len(context[minimum]),len(context[minimum]),replace = False)
