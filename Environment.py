@@ -7,9 +7,9 @@ from sklearn.datasets import make_blobs
 class TinderEnv:
 
     def __init__(self,
-                nb_users_men=40,
-                nb_users_women=100,
-                nb_classes = 10,
+                nb_users_men=10,
+                nb_users_women=50,
+                nb_classes = 4,
                 internal_embedding_size=10,
                 std = 5.0,
                 seed=None):

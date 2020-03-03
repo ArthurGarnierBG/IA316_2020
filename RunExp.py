@@ -26,9 +26,9 @@ def run_exp(agent, env, nb_steps, env_seed):
         #Smart random
         #recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
         #Random Pure
-        recommendation = agent.act(men_embedding, women_embedding, men_class, women_class, possible_recommendation)
+        #recommendation = agent.act(men_embedding, women_embedding, men_class, women_class, possible_recommendation)
         #Epsilon_Greedy_Agent
-        #recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
+        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
 
         #print("Agent recommendation : "+str(recommendation))
         #print(men_class)
@@ -36,8 +36,8 @@ def run_exp(agent, env, nb_steps, env_seed):
         rewards_list, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
         #print("Env reward :"+str(reward))
         # Update agent. careful possible_recommendation of former state
-        agent.update(rewards_list)
-        #agent.update(rewards_list, recommendation, men_class, women_class)
+        #agent.update(rewards_list)
+        agent.update(rewards_list, recommendation, men_class, women_class)
         #context = next_context
 
         # Save history.
@@ -80,8 +80,8 @@ if __name__ == '__main__':
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
         #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.2, nb_classes=env.nb_classes)
-        agent = Pure_Random_Agent(seed=seed)
+        agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
+        #agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
