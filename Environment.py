@@ -122,11 +122,18 @@ class TinderEnv:
     def Proba(self,nb_classes):
         score = []
         top = np.random.choice(nb_classes,nb_classes,replace=False)
+
         for i in range(nb_classes):
             match_score=[]
+            alpa = [j for j in range(nb_classes)]
+            alpa.remove(top[i])
+            
+            second = np.random.choice(alpa,1)
             for j in range(nb_classes):
                 if j==top[i]:
                     match_score.append([0.4,0.9])
+                elif j == second:
+                    match_score.append([0.6,0.95])
                 else :
                     match_score.append([0.9,0.98])
             score.append(match_score)
