@@ -50,8 +50,9 @@ class Epsilon_Greedy_Agent:
             #print("N : "+str(self._n))
             #print("Q : "+str(self._n))
             i += 1
-        print("N : " +str(self._n))
-        print("Q : " +str(self._q))
+        #print("N : " +str(self._n))
+        #print("Q : " +str(self._q))
+
 
 
     def random_argmax(self, rng, list_):

@@ -83,11 +83,12 @@ if __name__ == '__main__':
         #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
         #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
         #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
+        
         agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
-
+    print(env.match_score)
 
     
     #plt.xlabel('steps')
@@ -106,7 +107,7 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret2[i] = exp['regret']
         regrets2[i] = exp['cum_regrets']
-
+    print(env.match_score)
 
     #plt.xlabel('steps')
     #plt.ylabel('regret')
@@ -121,10 +122,12 @@ if __name__ == '__main__':
         agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
         #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
         #agent = Pure_Random_Agent(seed=seed)
+
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret3[i] = exp['regret']
         regrets3[i] = exp['cum_regrets']
-
+    print(env.match_score)
+    print(agent._q)
 
     
     #plt.xlabel('steps')
@@ -143,7 +146,8 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret4[i] = exp['regret']
         regrets4[i] = exp['cum_regrets']
-
+    print(env.match_score)
+    print(agent._q)
 
 
     plt.plot(regrets.mean(axis=0), color='blue')
