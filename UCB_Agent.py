@@ -1,10 +1,11 @@
 from scipy.optimize import linear_sum_assignment
 import numpy as np
 
-class Epsilon_Greedy_Agent:
+class UCB_Agent:
     """ Special Epsilon greedy agent, with a 2-Dimensional N and Q"""
-    def __init__(self, nb_classes, epsilon=0, seed=None):
-        self._epsilon = epsilon
+    def __init__(self, nb_classes, c=1,t=0, seed=None):
+        self._c = 1
+        self._t=t
         self.nb_classes = nb_classes
         self._q = np.zeros((nb_classes, nb_classes))
         self._n = np.zeros((nb_classes, nb_classes))
@@ -20,10 +21,11 @@ class Epsilon_Greedy_Agent:
             for element in diff:
                 man_rec.remove(element)
 
-            if np.random.random() < self._epsilon:
-                class_rec = np.random.randint(self.nb_classes)
+            if min(self._n[men_class[i]]) == 0:
+              index = np.where(self._n[men_class[i]] == 0)[0]
+              class_rec = np.random.choice(index)
             else:
-                class_rec = self.random_argmax(np.random, self._q[men_class[i]])
+              class_rec = self.random_argmax(np.random, self._q[men_class[i]]+self._c*np.sqrt(np.log(self._t)/self._n[men_class[i]]))
 
             woman = self.get_matching_woman(class_rec, women_class, man_rec, user_match_history, women_index)
             women_index.remove(woman)
@@ -37,12 +39,11 @@ class Epsilon_Greedy_Agent:
         for pair in recommended_pairs:
             man_class = men_class[pair[0]]
             woman_class = women_class[pair[1]]
-            #print("pair class : "+str(man_class)+","+str(woman_class))
             self._n[man_class][woman_class] += 1
             self._q[man_class][woman_class] += (rewards[i] - self._q[man_class][woman_class])/self._n[man_class][woman_class]
-            #print("N : "+str(self._n))
-            #print("Q : "+str(self._n))
+      
             i += 1
+        self._t+=1
 
 
     def random_argmax(self, rng, list_):
