@@ -126,7 +126,7 @@ class TinderEnv:
             match_score=[]
             for j in range(nb_classes):
                 if j==top[i]:
-                    match_score.append([0.4,0.9])
+                    match_score.append([0.4,0.85])
                 else :
                     match_score.append([0.9,0.96])
             score.append(match_score)
