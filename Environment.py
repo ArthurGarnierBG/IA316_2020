@@ -126,9 +126,9 @@ class TinderEnv:
             match_score=[]
             for j in range(nb_classes):
                 if j==top[i]:
-                    match_score.append([0.4,0.85])
+                    match_score.append([0.4,0.9])
                 else :
-                    match_score.append([0.9,0.96])
+                    match_score.append([0.9,0.98])
             score.append(match_score)
         return score
 
@@ -177,9 +177,9 @@ class TinderEnv:
         if p < self.match_score[self.men_class[user1]][self.women_class[user2]][0]:
             score = 0
         elif self.match_score[self.men_class[user1]][self.women_class[user2]][0]<=p < self.match_score[self.men_class[user1]][self.women_class[user2]][1]:
-            score = 1
+            score = 2
         else:
-            score = 4
+            score = 5
         #real_score = self.men_embedding[user1].dot(self.women_embedding[user2])
         #print("real score: "+str(real_score))
         #match_score = np.searchsorted(self.z_cut_points, real_score)

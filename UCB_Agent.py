@@ -44,6 +44,8 @@ class UCB_Agent:
       
             i += 1
         self._t+=1
+        print("N : " +str(self._n))
+        print("Q : " +str(self._q))
 
 
     def random_argmax(self, rng, list_):
