@@ -121,14 +121,14 @@ class TinderEnv:
     #Que fait cette fonction?
     def Proba(self,nb_classes):
         score = []
-        top = np.random.choice(nb_classes,nb_classes,replace=False)
+        top = self._rng.choice(nb_classes,nb_classes,replace=False)
 
         for i in range(nb_classes):
             match_score=[]
             alpa = [j for j in range(nb_classes)]
             alpa.remove(top[i])
-            
-            second = np.random.choice(alpa,1)
+
+            second = self._rng.choice(alpa,1)
             for j in range(nb_classes):
                 if j==top[i]:
                     match_score.append([0.4,0.9])
@@ -146,7 +146,7 @@ class TinderEnv:
         self.X, self.y = make_blobs(n_samples=(self.nb_users_men + self.nb_users_women)*100, n_features=self.internal_embedding_size, centers=self.nb_classes, cluster_std=self.std, center_box=(-1.0, 1.0), shuffle=True, random_state=self._rng)
         self.indice = [i for i in range((self.nb_users_men+self.nb_users_women)*100)]
         #Delete the users indices that start coming in the app
-        indice = np.random.choice(self.indice, self.nb_users_men+self.nb_users_women, replace=False)
+        indice = self._rng.choice(self.indice, self.nb_users_men+self.nb_users_women, replace=False)
 
         for el in indice:
           self.indice.remove(el)
@@ -158,6 +158,7 @@ class TinderEnv:
         self.men_class = self.y[indice[0:self.nb_users_men]]
         self.women_class = self.y[indice[self.nb_users_men:self.nb_users_men+self.nb_users_women]]
         self.match_score = self.Proba(self.nb_classes)
+
         #self.women_embedding = self.get_new_user_women(self.nb_users_women)
         #self.kmeans = KMeans(n_clusters=self.nb_classes, random_state=self._rng).fit(np.concatenate([self.men_embedding,self.women_embedding]))
         #kmeans.labels_)
@@ -184,7 +185,7 @@ class TinderEnv:
         if p < self.match_score[self.men_class[user1]][self.women_class[user2]][0]:
             score = 0
         elif self.match_score[self.men_class[user1]][self.women_class[user2]][0]<=p < self.match_score[self.men_class[user1]][self.women_class[user2]][1]:
-            score = 2
+            score = 3
         else:
             score = 5
         #real_score = self.men_embedding[user1].dot(self.women_embedding[user2])
