@@ -4,7 +4,6 @@ class Pure_Random_Agent:
     def __init__(self, seed=None):
         self._rng = np.random.RandomState(seed)
 
-    #Context? men_embedding, women_embedding, possible_recommendation
     def act(self, men_class, women_class, possible_recommendation, user_match_history):
         context = [men_class, women_class, possible_recommendation]
         minimum = np.argmin(np.array([len(context[0]),len(context[1])]))
@@ -21,8 +20,6 @@ class Pure_Random_Agent:
             nope.append(c)
             women.append(c)
 
-          #while c in nope:
-            #c =np.random.choice(b,1,replace=False)
           nope.append(c)
           women.append(c)
         action = [(order[i],women[i][0]) for i in range(len(context[minimum]))]

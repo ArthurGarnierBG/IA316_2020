@@ -8,6 +8,7 @@ from Smart_Random_Agent import Smart_Random_Agent
 from Pure_Random_Agent import Pure_Random_Agent
 from Epsilon_Greedy_Agent import Epsilon_Greedy_Agent
 from UCB_Agent import UCB_Agent
+from QLearning_Greedy import QLearning_Greedy
 
 
 def run_exp(agent, env, nb_steps, env_seed):
@@ -16,30 +17,23 @@ def run_exp(agent, env, nb_steps, env_seed):
     nb_user_men = np.zeros(nb_steps)
     nb_user_women = np.zeros(nb_steps)
 
-    men_embedding, women_embedding, men_class, women_class, possible_recommendation = env.reset(env_seed)
+    men_class, women_class, possible_recommendation = env.reset(env_seed)
 
     for i in range(nb_steps):
-        #print("\nStep "+str(i))
-        #print("Nb steps:"+str(nb_steps))
-        #print(env.user_match_history)
-        # Select action from agent policy.
-        #print("\nPossible recommendations : "+str(possible_recommendation))
-        #Smart random
-        #recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
-        #Random Pure
-        #recommendation = agent.act(men_embedding, women_embedding, men_class, women_class, possible_recommendation)
-        #Epsilon_Greedy_Agent
+        #Agent recommendation pairs
         recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
 
-        #print("Agent recommendation : "+str(recommendation))
-        #print(men_class)
         # Play action in the environment and get reward.
-        rewards_list, men_embedding, women_embedding, men_class, women_class, possible_recommendation, done, optimal_reward = env.step(recommendation)
-        #print("Env reward :"+str(reward))
-        # Update agent. careful possible_recommendation of former state
-        #agent.update(rewards_list)
+        rewards_list, men_class_next, women_class_next, possible_recommendation_next, done, optimal_reward = env.step(recommendation)
+
+        # Update agent
         agent.update(rewards_list, recommendation, men_class, women_class)
-        #context = next_context
+
+        #Update state
+        men_class = men_class_next
+        women_class = women_class_next
+        possible_recommendation = possible_recommendation_next
+
 
         # Save history.
         tot_reward = np.array(rewards_list).sum()
@@ -50,12 +44,6 @@ def run_exp(agent, env, nb_steps, env_seed):
 
     reward = np.sum(rewards)
     regret = np.sum(regrets)
-    #print("Rewards: "+str(rewards))
-
-    #print("\nRewards at each iteration : "+str(rewards))
-    #print("Regrets at each iteration : "+str(regrets))
-    #print("Total reward : "+str(reward))
-    #print("Total regret : "+str(regret))
 
     return {'reward': reward,
             'regret': regret,
@@ -78,22 +66,13 @@ if __name__ == '__main__':
     regret = np.zeros(nb_exp)
     regrets = np.zeros((nb_exp, nb_steps))
 
+
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
-        #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
-        #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
-        
         agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
-    print(env.match_score)
-
-    
-    #plt.xlabel('steps')
-    #plt.ylabel('regret')
-    #plt.show()
 
     regret2 = np.zeros(nb_exp)
     regrets2 = np.zeros((nb_exp, nb_steps))
@@ -101,75 +80,74 @@ if __name__ == '__main__':
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
         agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
-        #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
-        #agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret2[i] = exp['regret']
         regrets2[i] = exp['cum_regrets']
-    print(env.match_score)
-
-    #plt.xlabel('steps')
-    #plt.ylabel('regret')
-    #plt.show()
 
     regret3 = np.zeros(nb_exp)
     regrets3 = np.zeros((nb_exp, nb_steps))
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
-        #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
-        #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
-        #agent = Pure_Random_Agent(seed=seed)
-
+        agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.2, nb_classes=env.nb_classes)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret3[i] = exp['regret']
         regrets3[i] = exp['cum_regrets']
+    print("\n********** Epsilon Greedy policy **********")
     print(env.match_score)
     print(agent._q)
-
-    
-    #plt.xlabel('steps')
-    #plt.ylabel('regret')
-    #plt.show()
 
     regret4 = np.zeros(nb_exp)
     regrets4 = np.zeros((nb_exp, nb_steps))
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
-        #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
         agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
-        #agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret4[i] = exp['regret']
         regrets4[i] = exp['cum_regrets']
+    print("\n********** UCB policy **********")
     print(env.match_score)
     print(agent._q)
 
+    regret5 = np.zeros(nb_exp)
+    regrets5 = np.zeros((nb_exp, nb_steps))
 
+    for i in range(nb_exp):
+        env = TinderEnv(seed=seed)
+        agent = QLearning_Greedy(nb_classes=env.nb_classes, alpha=0.5, discount_factor=0.1, epsilon=0.1, seed=seed)
+        exp = run_exp(agent, env, nb_steps, env_seed=seed)
+        regret5[i] = exp['regret']
+        regrets5[i] = exp['cum_regrets']
+    print("\n********** Q Learning policy **********")
+    print(env.match_score)
+    print(agent._Q)
+
+    #Plot
     plt.plot(regrets.mean(axis=0), color='blue')
     plt.plot(regrets2.mean(axis=0), color='green')
     plt.plot(regrets3.mean(axis=0), color='yellow')
     plt.plot(regrets4.mean(axis=0), color='red')
-    plt.legend(['Pure','Smart','Epsilon','Ucb'])
-    plt.plot(np.quantile(regrets, 0.05,axis=0), color='grey', alpha=0.5)
-    plt.plot(np.quantile(regrets, 0.95,axis=0), color='grey', alpha=0.5)
-    plt.title('Mean regret: {:.2f}'.format(regret.mean()))
-    
-    plt.plot(np.quantile(regrets2, 0.05,axis=0), color='grey', alpha=0.5)
-    plt.plot(np.quantile(regrets2, 0.95,axis=0), color='grey', alpha=0.5)
-    plt.title('Mean regret: {:.2f}'.format(regret.mean()))
-    plt.plot(np.quantile(regrets3, 0.05,axis=0), color='grey', alpha=0.5)
-    plt.plot(np.quantile(regrets3, 0.95,axis=0), color='grey', alpha=0.5)
-    plt.title('Mean regret: {:.2f}'.format(regret3.mean()))
-    
-    
-    plt.plot(np.quantile(regrets4, 0.05,axis=0), color='grey', alpha=0.5)
-    plt.plot(np.quantile(regrets4, 0.95,axis=0), color='grey', alpha=0.5)
-    plt.title('Mean regret: {:.2f}'.format(regret.mean()))
+    plt.plot(regrets5.mean(axis=0), color='black')
+
+    plt.plot(np.quantile(regrets, 0.05,axis=0), color='blue', alpha=0.3)
+    plt.plot(np.quantile(regrets, 0.95,axis=0), color='blue', alpha=0.3)
+
+    plt.plot(np.quantile(regrets2, 0.05,axis=0), color='green', alpha=0.3)
+    plt.plot(np.quantile(regrets2, 0.95,axis=0), color='green', alpha=0.3)
+
+    plt.plot(np.quantile(regrets3, 0.05,axis=0), color='yellow', alpha=0.3)
+    plt.plot(np.quantile(regrets3, 0.95,axis=0), color='yellow', alpha=0.3)
+
+    plt.plot(np.quantile(regrets4, 0.05,axis=0), color='red', alpha=0.3)
+    plt.plot(np.quantile(regrets4, 0.95,axis=0), color='red', alpha=0.3)
+
+    plt.plot(np.quantile(regrets5, 0.05,axis=0), color='black', alpha=0.3)
+    plt.plot(np.quantile(regrets5, 0.95,axis=0), color='black', alpha=0.3)
+
+    plot_title = min([regret.mean(), regret2.mean(), regret3.mean(), regret4.mean(), regret5.mean()])
+    plt.title('Mean regret: {:.2f}'.format(plot_title))
+    plt.legend(['Pure','Smart','Epsilon','Ucb', 'QLearning'])
     plt.xlabel('steps')
     plt.ylabel('regret')
     plt.show()
