@@ -7,6 +7,7 @@ from Environment import TinderEnv
 from Smart_Random_Agent import Smart_Random_Agent
 from Pure_Random_Agent import Pure_Random_Agent
 from Epsilon_Greedy_Agent import Epsilon_Greedy_Agent
+from UCB_Agent import UCB_Agent
 
 
 def run_exp(agent, env, nb_steps, env_seed):
@@ -80,16 +81,90 @@ if __name__ == '__main__':
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
         #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
-        agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
-        #agent = Pure_Random_Agent(seed=seed)
+        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
+        #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
+        agent = Pure_Random_Agent(seed=seed)
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
 
 
+    
+    #plt.xlabel('steps')
+    #plt.ylabel('regret')
+    #plt.show()
+
+    regret2 = np.zeros(nb_exp)
+    regrets2 = np.zeros((nb_exp, nb_steps))
+
+    for i in range(nb_exp):
+        env = TinderEnv(seed=seed)
+        agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
+        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
+        #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
+        #agent = Pure_Random_Agent(seed=seed)
+        exp = run_exp(agent, env, nb_steps, env_seed=seed)
+        regret2[i] = exp['regret']
+        regrets2[i] = exp['cum_regrets']
+
+
+    #plt.xlabel('steps')
+    #plt.ylabel('regret')
+    #plt.show()
+
+    regret3 = np.zeros(nb_exp)
+    regrets3 = np.zeros((nb_exp, nb_steps))
+
+    for i in range(nb_exp):
+        env = TinderEnv(seed=seed)
+        #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
+        agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
+        #agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
+        #agent = Pure_Random_Agent(seed=seed)
+        exp = run_exp(agent, env, nb_steps, env_seed=seed)
+        regret3[i] = exp['regret']
+        regrets3[i] = exp['cum_regrets']
+
+
+    
+    #plt.xlabel('steps')
+    #plt.ylabel('regret')
+    #plt.show()
+
+    regret4 = np.zeros(nb_exp)
+    regrets4 = np.zeros((nb_exp, nb_steps))
+
+    for i in range(nb_exp):
+        env = TinderEnv(seed=seed)
+        #agent = Smart_Random_Agent(seed=seed, nb_classes=env.nb_classes)
+        #agent = Epsilon_Greedy_Agent(seed=seed, epsilon=0.3, nb_classes=env.nb_classes)
+        agent = UCB_Agent(seed=seed, c=1, nb_classes=env.nb_classes)
+        #agent = Pure_Random_Agent(seed=seed)
+        exp = run_exp(agent, env, nb_steps, env_seed=seed)
+        regret4[i] = exp['regret']
+        regrets4[i] = exp['cum_regrets']
+
+
+
     plt.plot(regrets.mean(axis=0), color='blue')
+    plt.plot(regrets2.mean(axis=0), color='green')
+    plt.plot(regrets3.mean(axis=0), color='yellow')
+    plt.plot(regrets4.mean(axis=0), color='red')
+    plt.legend(['Pure','Smart','Epsilon','Ucb'])
     plt.plot(np.quantile(regrets, 0.05,axis=0), color='grey', alpha=0.5)
     plt.plot(np.quantile(regrets, 0.95,axis=0), color='grey', alpha=0.5)
+    plt.title('Mean regret: {:.2f}'.format(regret.mean()))
+    
+    plt.plot(np.quantile(regrets2, 0.05,axis=0), color='grey', alpha=0.5)
+    plt.plot(np.quantile(regrets2, 0.95,axis=0), color='grey', alpha=0.5)
+    plt.title('Mean regret: {:.2f}'.format(regret.mean()))
+    plt.plot(np.quantile(regrets3, 0.05,axis=0), color='grey', alpha=0.5)
+    plt.plot(np.quantile(regrets3, 0.95,axis=0), color='grey', alpha=0.5)
+    plt.title('Mean regret: {:.2f}'.format(regret3.mean()))
+    
+    
+    plt.plot(np.quantile(regrets4, 0.05,axis=0), color='grey', alpha=0.5)
+    plt.plot(np.quantile(regrets4, 0.95,axis=0), color='grey', alpha=0.5)
     plt.title('Mean regret: {:.2f}'.format(regret.mean()))
     plt.xlabel('steps')
     plt.ylabel('regret')

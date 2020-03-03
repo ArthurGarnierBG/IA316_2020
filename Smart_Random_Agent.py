@@ -32,7 +32,7 @@ class Smart_Random_Agent:
         #print("Agent recommendation pair: "+str(recommendation))
         return(recommendation)
 
-    def update(self, reward):
+    def update(self, rewards, recommended_pairs, men_class, women_class):
         pass
 
     def get_number_woman_match(self, woman, user_match_history):
