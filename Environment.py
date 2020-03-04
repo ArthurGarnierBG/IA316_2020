@@ -7,12 +7,12 @@ from sklearn.datasets import make_blobs
 class TinderEnv:
 
     def __init__(self,
-                nb_users_men=40,
-                nb_users_women=160,
-                nb_classes = 10,
-                internal_embedding_size=20,
-                mega_score = 5,
-                matching_score=2,
+                nb_users_men=30,
+                nb_users_women=100,
+                nb_classes = 5,
+                internal_embedding_size=10,
+                mega_score = 4,
+                matching_score=1,
                 std = 5.0,
                 seed=None):
 
@@ -34,9 +34,7 @@ class TinderEnv:
         self.men_class = None
         self.women_embedding = None
         self.women_class = None
-        #X?
         self.X = None
-        #yy?
         self.y = None
         self.user_match_history = None
         self.user_matching_history = None
@@ -45,6 +43,7 @@ class TinderEnv:
         self.match_score = None
         self.indice = None
         self.done = False
+        self.nb_mega_match = 0
 
 
     def step(self, action):
@@ -70,17 +69,18 @@ class TinderEnv:
 
         # map couple as already recommended
         left_app = 0
-        
+
         for p in action:
             self.user_match_history[p[0],p[1]] = 1
 
             #We won't recommend couples that left the app
             if(self._get_user_match(p[0],p[1])) == self.mega_score:
-                
+
                 left_app += 1
+                self.nb_mega_match += 1
                 self.user_match_history[p[0],:] = 1
                 self.user_match_history[:,p[1]] = 1
-                
+
             if (self._get_user_match(p[0],p[1])) == self.matching_score:
                 self.user_matching_history[p[0],p[1]] = 1
         # compute reward R_t
@@ -90,11 +90,11 @@ class TinderEnv:
         #Compute the number of men and women starting using the left_app
         new_user_man = left_app
         new_user_woman = left_app
-        
+
         #Manage entering and leaving people from the app
         #self.update_new_users(new_user_man, new_user_woman, index_left_app)
         self.replace_full_rec(self.user_match_history)
-      
+
 
         # check if done
         if self.user_match_history.sum() == self.sampling_limit:
@@ -111,14 +111,14 @@ class TinderEnv:
     #                regular other classes (8% match probability, 2% super-match probability)
     def Proba(self,nb_classes):
         score = []
-        top = np.random.choice(nb_classes, nb_classes, replace=False)
+        top = self._rng.choice(nb_classes, nb_classes, replace=False)
 
         for i in range(nb_classes):
             match_score=[]
             alpa = [j for j in range(nb_classes)]
             alpa.remove(top[i])
 
-            second = np.random.choice(alpa,1)
+            second = self._rng.choice(alpa,1)
             for j in range(nb_classes):
                 if j==top[i]:
                     match_score.append([0.4,0.9])
@@ -188,7 +188,7 @@ class TinderEnv:
 
     #Update embeddings, user_match_history, user classes and number of men/women in the app
     #when people enter or leave the app
-    
+
 
     #Get people who has been recommended to every one and make him leave the app
     #Replace the same number of leaving people by new users
@@ -210,17 +210,17 @@ class TinderEnv:
             if(user_match_history[i,:].sum() == nb_user_women):
                 indice_man_full.append(i)
         return indice_man_full
-    
+
     def replace_full_rec(self, user_match_history):
             nb_user_men = self.nb_users_men
             nb_user_women = self.nb_users_women
             #Check men users
             indice_man_full = self.indice_full_man(user_match_history)
             indice_woman_full = self.indice_full_woman(user_match_history)
-            
-           
-                
-                    
+
+
+
+
             man_embedding, man_class = self.get_new_user(len(indice_man_full))
             woman_embedding, woman_class = self.get_new_user(len(indice_woman_full))
                     #Delete previous match, features and classes
@@ -235,8 +235,8 @@ class TinderEnv:
             self.men_class = np.append(self.men_class, man_class, axis=0)
 
             #Check women users
-          
-            
+
+
             self.women_embedding = np.delete(self.women_embedding, indice_woman_full, 0)
             self.user_match_history = np.delete(self.user_match_history, indice_woman_full, 1)
             self.user_matching_history = np.delete(self.user_matching_history, indice_woman_full, 1)
@@ -246,7 +246,7 @@ class TinderEnv:
             self.user_match_history = np.c_[self.user_match_history, np.zeros((self.nb_users_men,len(indice_woman_full)))]
             self.user_matching_history = np.c_[self.user_matching_history, np.zeros((self.nb_users_men,len(indice_woman_full)))]
             self.women_class = np.append(self.women_class, woman_class, axis=0)
-       
+
 
             self.action_size = min(self.nb_users_men, self.nb_users_women)
             self.sampling_limit = self.nb_users_men * self.nb_users_women

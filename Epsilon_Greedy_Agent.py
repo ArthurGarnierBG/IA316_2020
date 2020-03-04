@@ -3,7 +3,7 @@ import numpy as np
 
 class Epsilon_Greedy_Agent:
     """ Special Epsilon greedy agent, with a 2-Dimensional N and Q"""
-    def __init__(self, nb_classes, epsilon=0, seed=None):
+    def __init__(self, nb_classes, epsilon=0.1, seed=None):
         self._epsilon = epsilon
         self.nb_classes = nb_classes
         self._q = np.zeros((nb_classes, nb_classes))

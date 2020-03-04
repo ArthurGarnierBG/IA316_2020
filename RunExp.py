@@ -21,7 +21,7 @@ def run_exp(agent, env, nb_steps, env_seed):
 
     for i in range(nb_steps):
         #Agent recommendation pairs
-        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_matching_history)
+        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
 
         # Play action in the environment and get reward.
         rewards_list, men_class_next, women_class_next, possible_recommendation_next, done, optimal_reward = env.step(recommendation)
@@ -52,7 +52,8 @@ def run_exp(agent, env, nb_steps, env_seed):
             'cum_rewards': np.cumsum(rewards),
             'cum_regrets': np.cumsum(regrets),
             'nb_user_men': nb_user_men,
-            'nb_user_women': nb_user_women
+            'nb_user_women': nb_user_women,
+            'mega_match': env.nb_mega_match
             }
 
 if __name__ == '__main__':
@@ -65,6 +66,7 @@ if __name__ == '__main__':
     seed = 2020
     regret = np.zeros(nb_exp)
     regrets = np.zeros((nb_exp, nb_steps))
+    mega_match = np.zeros(nb_exp)
 
 
     for i in range(nb_exp):
@@ -73,9 +75,12 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret[i] = exp['regret']
         regrets[i] = exp['cum_regrets']
-
+        mega_match[i] = exp['mega_match']
+    print("\n********** Pure Random policy **********")
+    print("Number of mega match : "+str(mega_match))
     regret2 = np.zeros(nb_exp)
     regrets2 = np.zeros((nb_exp, nb_steps))
+    mega_match2 = np.zeros(nb_exp)
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
@@ -83,9 +88,12 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret2[i] = exp['regret']
         regrets2[i] = exp['cum_regrets']
-
+        mega_match2[i] = exp['mega_match']
+    print("\n********** Smart Random policy **********")
+    print("Number of mega match : "+str(mega_match2))
     regret3 = np.zeros(nb_exp)
     regrets3 = np.zeros((nb_exp, nb_steps))
+    mega_match3 = np.zeros(nb_exp)
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
@@ -93,12 +101,15 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret3[i] = exp['regret']
         regrets3[i] = exp['cum_regrets']
+        mega_match3[i] = exp['mega_match']
     print("\n********** Epsilon Greedy policy **********")
+    print("Number of mega match : "+str(mega_match3))
     print(env.match_score)
     print(agent._q)
 
     regret4 = np.zeros(nb_exp)
     regrets4 = np.zeros((nb_exp, nb_steps))
+    mega_match4 = np.zeros(nb_exp)
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
@@ -106,12 +117,15 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret4[i] = exp['regret']
         regrets4[i] = exp['cum_regrets']
+        mega_match4[i] = exp['mega_match']
     print("\n********** UCB policy **********")
+    print("Number of mega match : "+str(mega_match4))
     print(env.match_score)
     print(agent._q)
 
     regret5 = np.zeros(nb_exp)
     regrets5 = np.zeros((nb_exp, nb_steps))
+    mega_match5 = np.zeros(nb_exp)
 
     for i in range(nb_exp):
         env = TinderEnv(seed=seed)
@@ -119,7 +133,10 @@ if __name__ == '__main__':
         exp = run_exp(agent, env, nb_steps, env_seed=seed)
         regret5[i] = exp['regret']
         regrets5[i] = exp['cum_regrets']
+        mega_match5[i] = exp['mega_match']
+
     print("\n********** Q Learning policy **********")
+    print("Number of mega match : "+str(mega_match5))
     print(env.match_score)
     print(agent._Q)
 

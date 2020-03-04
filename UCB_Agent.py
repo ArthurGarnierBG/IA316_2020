@@ -4,7 +4,7 @@ import numpy as np
 class UCB_Agent:
     """ Special UCB agent, with a 2-Dimensional N and Q"""
     def __init__(self, nb_classes, c=1,t=0, seed=None):
-        self._c = 1
+        self._c = c
         self._t = t
         self.nb_classes = nb_classes
         self._q = np.zeros((nb_classes, nb_classes))
