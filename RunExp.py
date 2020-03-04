@@ -21,7 +21,7 @@ def run_exp(agent, env, nb_steps, env_seed):
 
     for i in range(nb_steps):
         #Agent recommendation pairs
-        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_match_history)
+        recommendation = agent.act(men_class, women_class, possible_recommendation, env.user_matching_history)
 
         # Play action in the environment and get reward.
         rewards_list, men_class_next, women_class_next, possible_recommendation_next, done, optimal_reward = env.step(recommendation)
