@@ -7,13 +7,13 @@ from sklearn.datasets import make_blobs
 class TinderEnv:
 
     def __init__(self,
-                nb_users_men=30,
-                nb_users_women=100,
-                nb_classes = 5,
+                nb_users_men=150,
+                nb_users_women=150,
+                nb_classes = 15,
                 internal_embedding_size=10,
-                mega_score = 4,
-                matching_score=1,
-                std = 5.0,
+                mega_score = 5,
+                matching_score= 1,
+                std = 0.01,
                 seed=None):
 
         self.std = std
@@ -121,11 +121,11 @@ class TinderEnv:
             second = self._rng.choice(alpa,1)
             for j in range(nb_classes):
                 if j==top[i]:
-                    match_score.append([0.4,0.9])
+                    match_score.append([0.2,0.6])
                 elif j == second:
-                    match_score.append([0.6,0.95])
+                    match_score.append([0.35,0.85])
                 else :
-                    match_score.append([0.9,0.98])
+                    match_score.append([0.8,0.99])
             score.append(match_score)
         return score
 
@@ -185,11 +185,6 @@ class TinderEnv:
       X_user, y_user = self.X[indice[0:nb_users]], self.y[indice[0:nb_users]]
       return X_user, y_user
 
-
-    #Update embeddings, user_match_history, user classes and number of men/women in the app
-    #when people enter or leave the app
-
-
     #Get people who has been recommended to every one and make him leave the app
     #Replace the same number of leaving people by new users
     def indice_full_woman(self,user_match_history):
@@ -218,30 +213,25 @@ class TinderEnv:
             indice_man_full = self.indice_full_man(user_match_history)
             indice_woman_full = self.indice_full_woman(user_match_history)
 
-
-
-
             man_embedding, man_class = self.get_new_user(len(indice_man_full))
             woman_embedding, woman_class = self.get_new_user(len(indice_woman_full))
-                    #Delete previous match, features and classes
+            #Delete previous match, features and classes
             self.men_embedding = np.delete(self.men_embedding, indice_man_full, 0)
             self.user_match_history = np.delete(self.user_match_history, indice_man_full, 0)
             self.user_matching_history = np.delete(self.user_matching_history, indice_man_full, 0)
             self.men_class = np.delete(self.men_class, indice_man_full)
-                    #Append new features, history and class
+            #Append new features, history and class
             self.men_embedding = np.append(self.men_embedding, man_embedding, axis=0)
             self.user_match_history = np.r_[self.user_match_history, np.zeros((len(indice_man_full),self.nb_users_women))]
             self.user_matching_history = np.r_[self.user_matching_history, np.zeros((len(indice_man_full),self.nb_users_women))]
             self.men_class = np.append(self.men_class, man_class, axis=0)
 
             #Check women users
-
-
             self.women_embedding = np.delete(self.women_embedding, indice_woman_full, 0)
             self.user_match_history = np.delete(self.user_match_history, indice_woman_full, 1)
             self.user_matching_history = np.delete(self.user_matching_history, indice_woman_full, 1)
             self.women_class = np.delete(self.women_class, indice_woman_full)
-                    #Append new features, history and class
+            #Append new features, history and class
             self.women_embedding = np.append(self.women_embedding, woman_embedding, axis=0)
             self.user_match_history = np.c_[self.user_match_history, np.zeros((self.nb_users_men,len(indice_woman_full)))]
             self.user_matching_history = np.c_[self.user_matching_history, np.zeros((self.nb_users_men,len(indice_woman_full)))]
